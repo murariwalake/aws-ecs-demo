@@ -4,8 +4,8 @@
 This repository contains two spring boot microservices `users` and `products`. 
 Both microservices expose health end points `users/api/v1/health` and `products/api/v1/health` respectively.
 
-users health API makes call to products health API and sends health status of products microservice as well.
-producys health API just sends its own heath status.
+`health` API makes call to products health API and sends health status of products microservice as well.
+`products` health API just sends its own heath status.
 
 This repository is created to demonstrate deployment of microservices in AWS ECS using Fargate launch type.
 1. Build and push Docker image to ECR or Docker Hub
@@ -32,8 +32,8 @@ Follow these steps to deploy the application locally:
 
 1. **Clone the repository:**
     ```bash
-    git clone <git repo url>
-    cd product
+    git clone https://github.com/murariwalake/aws-ecs-demo.git
+    cd awsecs-demo/product
     ```
 
 2. **Build the project:**
