@@ -26,55 +26,110 @@ Ensure you have the following prerequisites installed and configured:
   brew install docker
   ```
 
-## Deployment in Local Environment
-
-Follow these steps to deploy the application locally:
-
-1. **Clone the repository:**
+### Clone the repository:
     ```bash
-    git clone https://github.com/murariwalake/aws-ecs-demo.git
-    cd awsecs-demo/product
+    git clone [<git repo url>](https://github.com/murariwalake/aws-ecs-demo.git)
     ```
 
-2. **Build the project:**
+## Deployment in AWS ECS using fargate launch type
+### Step 1: Build and push docker image service to docker hub
+### For products service
+1. Build the project:
     ```bash
+    cd /aws-ecs-demo/product
     ./gradlew clean build
     ```
 
-3. **Build the Docker image:**
+2. Build the Docker image:
     ```bash
     docker build -t murariwalake/products:1 .
     ```
+3. Push the docker image to dockerhub
+    ```bash
+    docker push murariwalake/users:1
+    ```
 
-4. **Run the Docker container:**
+3. Run the Docker container in local:
     ```bash
     docker run -d -p 8080:8080 murariwalake/products:1
     ```
+4. Access the service using below URL
+    ```bash
+    curl http://localhost:8080/products/api/v1/health
+    ```
 
-### Health Check
+### For Users service
+1. Build the project:
+    ```bash
+    cd /aws-ecs-demo/user
+    ./gradlew clean build
+    ```
 
-Make a health check request using `curl`:
-```bash
-curl http://localhost:8080/products/api/v1/health
-```
+2. Build the Docker image:
+    ```bash
+    docker build -t murariwalake/users:1 .
+    ```
+3. Push the docker image to dockerhub
+    ```bash
+    docker push murariwalake/users:1
+    ```
 
-## Deployment in AWS ECS using fargate launch type
-1. **Build and push Docker image to ECR or Docker Hub**
-2. **Create ECS cluster:** (Skip if already created one)
-    - Select only Fargate launch type and leave all other settings as default.
-3. **Create ECS task definition `products`:**
-    1. Mention the image URI of the Docker image `murariwalake/products:6`.
-    2. Mention container port mapping as `8080`.
-    3. Leave all other settings as default.
-4. **Create ECS service:**
-    1. Select Compute options as `Launch type`.
-    2. Launch type as `Fargate`.
-    3. Application type as `Service`.
-    4. Select task definition `products` created in step 3.
-    5. Under network configuration, create/select existing security group. This should allow HTTP traffic from ALB on port 8080.
-    6. Create a new ALB `ecs-demo-elb` (ensure SG of ALB allows HTTP traffic from the internet).
-        1. Create a new HTTP listener on port `8080`.
-        2. Create a new target group `products-service-tg`.
-        3. Health check path as `/products/api/v1/health` (missing this may cause ECS to report its health as unhealthy, resulting in continuous task creation/termination).
-    7. Create the service by clicking on the `Create` button.
-    8. Use ALB DNS name to access the service `<ALB DNS name>:8080/products/api/v1/health`.
+3. Run the Docker container in local:
+    ```bash
+    docker run -d -p 8081:8080 murariwalake/users:1
+    ```
+4. Access the service using below URL
+    ```bash
+    curl http://localhost:8081/users/api/v1/health
+    ```
+
+
+### Step 2: Create ECS cluster `ecs-demo-cluster` in AWS console
+selecting only fargate as launch type and leave all other settings as default.
+
+### Step 3: Create ECS task definition `products-task-definition`
+1. Launch type as `Fargate`.
+2. CPU = 0.5 vCPU and Memory = 1 GB.
+3. Mention the image URI of the Docker image `murariwalake/products:6`.
+4. Container port mapping as `8080`.
+5. Rest of the settings as default.
+
+### Step 4: Create ECS service `products-service`
+1. Select Compute options as `Launch type`.
+2. Select family as `products-task-definition`.
+3. Networking
+   1. Create new security group `products-service-sg` allowing all traffic from anywhere (Will update this later to allow only any traffic from `ecs-demo-alb-sg`).
+4. Load balancing
+   1. Create new ALB `ecs-demo-alb`
+   2. Create a new HTTP listener on port `8080`.
+   3. Create a new target group `products-service-tg`.
+   4. Health check path as `/products/api/v1/health` (missing this may cause ECS to report its health as unhealthy, resulting in continuous task creation/termination).
+   5. Note: This ALB `ecs-demo-alb` will use security `products-service-sg` itself. We have 
+5. Access the service using below URL
+    ```bash
+    curl http://<ALB DNS name>:8080/products/api/v1/health
+    ```
+
+### Step 5: Create ECS task definition `users-task-definition`
+1. Launch type as `Fargate`.
+2. CPU = 0.5 vCPU and Memory = 1 GB.
+3. Mention the image URI of the Docker image `murariwalake/users:6`.
+4. Container port mapping as `8080`.
+5. Add environment variable `product.service.url=<ecs-demo-alb DNS name>:8080/products`
+6. Rest of the settings as default.
+
+### Step 6: Create ECS service `users-service`
+1. Select Compute options as `Launch type`.
+2. Select family as `users-task-definition`.
+3. Networking
+   1. Create new security group `users-service-sg` allowing all traffic from anywhere (Will update this later to allow only any traffic from `ecs-demo-alb-sg`).
+4. Load balancing
+   1. Select existing ALB `ecs-demo-alb`
+   2. Select existing HTTP listener on port `8080`.
+   3. Create a new target group `users-service-tg`.
+   4. Path pattern as `/users/*` and evaluation order as `1`.
+   5. Health check path as `/users/api/v1/health` (missing this may cause ECS to report its health as unhealthy, resulting in continuous task creation/termination).
+5. Access the service using below URL
+    ```bash
+    curl http://<ALB DNS name>:8080/users/api/v1/health
+    ```
