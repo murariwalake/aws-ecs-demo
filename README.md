@@ -45,7 +45,7 @@ Ensure you have the following prerequisites installed and configured:
     ```
 3. Push the docker image to dockerhub
     ```bash
-    docker push murariwalake/users:1
+    docker push murariwalake/products:1
     ```
 
 3. Run the Docker container in local:
