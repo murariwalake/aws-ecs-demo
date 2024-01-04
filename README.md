@@ -27,9 +27,7 @@ Ensure you have the following prerequisites installed and configured:
   ```
 
 ### Clone the repository:
-    ```bash
     git clone https://github.com/murariwalake/aws-ecs-demo.git
-    ```
    
 
 ## Deployment in AWS ECS using fargate launch type
