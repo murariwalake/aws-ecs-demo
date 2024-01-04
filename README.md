@@ -1,6 +1,6 @@
 # aws-ecs-demo
 
-## Overview
+### Overview
 This repository contains two spring boot microservices `users` and `products`. 
 Both microservices expose health end points `users/api/v1/health` and `products/api/v1/health` respectively.
 
@@ -13,7 +13,7 @@ This repository is created to demonstrate deployment of microservices in AWS ECS
 3. Create task definitions for users and products microservices
 4. Create ECS service for users and products microservices
 
-## Prerequisites
+### Prerequisites
 Ensure you have the following prerequisites installed and configured:
 
 - **Java 17**
@@ -28,8 +28,9 @@ Ensure you have the following prerequisites installed and configured:
 
 ### Clone the repository:
     ```bash
-    git clone [<git repo url>](https://github.com/murariwalake/aws-ecs-demo.git)
+    git clone https://github.com/murariwalake/aws-ecs-demo.git
     ```
+   
 
 ## Deployment in AWS ECS using fargate launch type
 ### Step 1: Build and push docker image service to docker hub
